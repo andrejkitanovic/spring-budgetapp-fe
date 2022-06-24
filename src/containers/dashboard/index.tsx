@@ -15,6 +15,8 @@ const Dashboard = () => {
     handleAdd,
     handleDeleteIncome,
     handleDeleteOutcome,
+    handleEditIncome,
+    handleEditOutcome,
     handleEdit,
     cancelEdit,
   } = useDashboard();
@@ -102,7 +104,13 @@ const Dashboard = () => {
 
             if (isEdit) {
               return (
-                <Formik initialValues={income} onSubmit={() => {}}>
+                <Formik
+                  initialValues={income}
+                  onSubmit={async (values) => {
+                    await handleEditIncome(values, income.id);
+                    cancelEdit();
+                  }}
+                >
                   <Form className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-blue-500">
                     <div>
                       Amount:{" "}
@@ -122,12 +130,12 @@ const Dashboard = () => {
                       />
                     </div>
                     <div className="flex">
-                      <div
+                      <button
                         className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
-                        // onClick={cancelEdit}
+                        type="submit"
                       >
                         Save
-                      </div>
+                      </button>
                       <div
                         className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
                         onClick={cancelEdit}
@@ -175,7 +183,13 @@ const Dashboard = () => {
 
             if (isEdit) {
               return (
-                <Formik initialValues={outcome} onSubmit={() => {}}>
+                <Formik
+                  initialValues={outcome}
+                  onSubmit={async (values) => {
+                    await handleEditOutcome(values, outcome.id);
+                    cancelEdit();
+                  }}
+                >
                   <Form className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-blue-500">
                     <div>
                       Amount:{" "}
@@ -195,12 +209,12 @@ const Dashboard = () => {
                       />
                     </div>
                     <div className="flex">
-                      <div
+                      <button
                         className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
-                        // onClick={cancelEdit}
+                        type="submit"
                       >
                         Save
-                      </div>
+                      </button>
                       <div
                         className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
                         onClick={cancelEdit}

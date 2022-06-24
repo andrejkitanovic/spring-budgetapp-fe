@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { queryCache, useMutation, useQuery } from "react-query";
 import { FormikConfig } from "formik";
-import { deleteSingleIncome, getIncomes, postIncome } from "api/income";
-import { deleteSingleOutcome, getOutcomes, postOutcome } from "api/outcome";
+import { deleteSingleIncome, getIncomes, postIncome, putSingleIncome } from "api/income";
+import { deleteSingleOutcome, getOutcomes, postOutcome, putSingleOutcome } from "api/outcome";
 import { IncomePayload } from "api/income/types";
 import { OutcomePayload } from "api/outcome/types";
 
@@ -80,6 +80,30 @@ export const useDashboard = () => {
     await deleteOutcome(JSON.stringify(outcomeId));
   };
 
+  const [editSingleIncome] = useMutation(
+    async ({ income, incomeId }: { income: IncomePayload; incomeId: string }) => {
+      const res = await putSingleIncome(income, incomeId);
+      await queryCache.invalidateQueries("incomes-all");
+      return res.data;
+    }
+  );
+
+  const handleEditIncome = async (income: IncomePayload, incomeId: number) => {
+    await editSingleIncome({ income, incomeId: JSON.stringify(incomeId) });
+  };
+
+  const [editSingleOutcome] = useMutation(
+    async ({ outcome, outcomeId }: { outcome: OutcomePayload; outcomeId: string }) => {
+      const res = await putSingleOutcome(outcome, outcomeId);
+      await queryCache.invalidateQueries("outcomes-all");
+      return res.data;
+    }
+  );
+
+  const handleEditOutcome = async (outcome: OutcomePayload, outcomeId: number) => {
+    await editSingleOutcome({ outcome, outcomeId: JSON.stringify(outcomeId) });
+  };
+
   const handleEdit = (type: "income" | "outcome", id: number) => {
     setEditBudget({ type, id });
   };
@@ -97,6 +121,8 @@ export const useDashboard = () => {
     handleAdd,
     handleDeleteIncome,
     handleDeleteOutcome,
+    handleEditIncome,
+    handleEditOutcome,
     handleEdit,
     cancelEdit,
   };

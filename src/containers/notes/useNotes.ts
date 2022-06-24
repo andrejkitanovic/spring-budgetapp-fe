@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { deleteSingleNote, getNotes, postNote } from "api/note";
+import { deleteSingleNote, getNotes, postNote, putSingleNote } from "api/note";
 import { queryCache, useMutation, useQuery } from "react-query";
 import { FormikConfig } from "formik";
 import { NotePayload } from "api/note/types";
@@ -40,6 +40,18 @@ export const useNotes = () => {
     await deleteNote(JSON.stringify(noteId));
   };
 
+  const [editSingleNote] = useMutation(
+    async ({ note, noteId }: { note: NotePayload; noteId: string }) => {
+      const res = await putSingleNote(note, noteId);
+      await queryCache.invalidateQueries("notes-all");
+      return res.data;
+    }
+  );
+
+  const handleEditNote = async (note: NotePayload, noteId: number) => {
+    await editSingleNote({ note, noteId: JSON.stringify(noteId) });
+  };
+
   const handleEdit = (id: number) => {
     setEditNote(id);
   };
@@ -47,5 +59,13 @@ export const useNotes = () => {
     setEditNote(null);
   };
 
-  return { editNote, notes, handleAdd, handleDelete, handleEdit, cancelEdit };
+  return {
+    editNote,
+    notes,
+    handleAdd,
+    handleDelete,
+    handleEditNote,
+    handleEdit,
+    cancelEdit,
+  };
 };

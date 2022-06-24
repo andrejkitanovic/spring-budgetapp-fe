@@ -5,8 +5,15 @@ import { Field, Form, Formik } from "formik";
 import { useNotes } from "./useNotes";
 
 const Notes = () => {
-  const { editNote, notes, handleAdd, handleDelete, handleEdit, cancelEdit } =
-    useNotes();
+  const {
+    editNote,
+    notes,
+    handleAdd,
+    handleDelete,
+    handleEditNote,
+    handleEdit,
+    cancelEdit,
+  } = useNotes();
 
   return (
     <Layout>
@@ -45,7 +52,13 @@ const Notes = () => {
 
           if (isEdit) {
             return (
-              <Formik initialValues={note} onSubmit={() => {}}>
+              <Formik
+                initialValues={note}
+                onSubmit={async (values) => {
+                  await handleEditNote(values, note.id);
+                  cancelEdit();
+                }}
+              >
                 <Form className="border-2 py-5 pb-3 px-5 bg-yellow-100 rounded-md border-blue-500 mb-2">
                   <div className="font-medium">
                     <Field
@@ -55,12 +68,12 @@ const Notes = () => {
                     />
                   </div>
                   <div className="flex">
-                    <div
+                    <button
                       className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
-                      // onClick={cancelEdit}
+                      type="submit"
                     >
                       Save
-                    </div>
+                    </button>
                     <div
                       className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
                       onClick={cancelEdit}
