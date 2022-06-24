@@ -7,3 +7,9 @@ export type OutcomeType = {
   date: Date;
   user: UserType;
 };
+
+export type OutcomePayload = {
+  description: OutcomeType["description"];
+  value: OutcomeType["value"];
+  date: OutcomeType["date"];
+};

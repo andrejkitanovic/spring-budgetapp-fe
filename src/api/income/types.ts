@@ -7,3 +7,9 @@ export type IncomeType = {
   date: Date;
   user: UserType;
 };
+
+export type IncomePayload = {
+  description: IncomeType["description"];
+  value: IncomeType["value"];
+  date: IncomeType["date"];
+};

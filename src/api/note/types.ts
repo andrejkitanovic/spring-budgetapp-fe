@@ -5,3 +5,7 @@ export type NoteType = {
   description: string;
   user: UserType;
 };
+
+export type NotePayload = {
+  description: NoteType["description"];
+};
