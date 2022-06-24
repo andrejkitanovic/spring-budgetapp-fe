@@ -1,43 +1,12 @@
 import React from "react";
 
 import Layout from "components/Layout/Layout";
-import { deleteSingleNote, getNotes, postNote } from "api/note";
-import { queryCache, useMutation, useQuery } from "react-query";
-import { Field, Form, Formik, FormikConfig } from "formik";
-import { NotePayload } from "api/note/types";
+import { Field, Form, Formik } from "formik";
+import { useNotes } from "./useNotes";
 
 const Notes = () => {
-  const { data: notes } = useQuery("notes-all", async () => {
-    const res = await getNotes();
-
-    return res.data;
-  });
-
-  const [deleteNote] = useMutation(async (noteId: string) => {
-    const res = await deleteSingleNote(noteId);
-    await queryCache.invalidateQueries("notes-all");
-    return res.data;
-  });
-
-  const handleDelete = async (noteId: number) => {
-    await deleteNote(JSON.stringify(noteId));
-  };
-
-  const [addNote] = useMutation(async (note: NotePayload) => {
-    const res = await postNote(note);
-    await queryCache.invalidateQueries("notes-all");
-    return res.data;
-  });
-
-  const handleAdd: FormikConfig<any>["onSubmit"] = async (
-    values,
-    { resetForm }
-  ) => {
-    await addNote({
-      ...values,
-    });
-    resetForm();
-  };
+  const { editNote, notes, handleAdd, handleDelete, handleEdit, cancelEdit } =
+    useNotes();
 
   return (
     <Layout>
@@ -71,17 +40,65 @@ const Notes = () => {
       </div>
 
       <div>
-        {notes?.map((note) => (
-          <div className="border-2 py-5 pb-3 px-5 bg-yellow-100 rounded-md mb-2">
-            <div className="font-medium">{note.description}</div>
-            <div
-              className="text-red-500 text-sm pt-2 cursor-pointer"
-              onClick={() => handleDelete(note.id)}
-            >
-              Delete
+        {notes?.map((note) => {
+          const isEdit = editNote === note.id;
+
+          if (isEdit) {
+            return (
+              <Formik initialValues={note} onSubmit={() => {}}>
+                <Form className="border-2 py-5 pb-3 px-5 bg-yellow-100 rounded-md border-blue-500 mb-2">
+                  <div className="font-medium">
+                    <Field
+                      name="description"
+                      placeholder="Description"
+                      className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-600 focus:ring-1"
+                    />
+                  </div>
+                  <div className="flex">
+                    <div
+                      className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
+                      // onClick={cancelEdit}
+                    >
+                      Save
+                    </div>
+                    <div
+                      className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                      onClick={cancelEdit}
+                    >
+                      Cancel Edit
+                    </div>
+                    <div
+                      className="text-red-500 text-sm pt-2 cursor-pointer"
+                      onClick={() => handleDelete(note.id)}
+                    >
+                      Delete
+                    </div>
+                  </div>
+                </Form>
+              </Formik>
+            );
+          }
+
+          return (
+            <div className="border-2 py-5 pb-3 px-5 bg-yellow-100 rounded-md mb-2">
+              <div className="font-medium">{note.description}</div>
+              <div className="flex">
+                <div
+                  className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                  onClick={() => handleEdit(note.id)}
+                >
+                  Edit
+                </div>
+                <div
+                  className="text-red-500 text-sm pt-2 cursor-pointer"
+                  onClick={() => handleDelete(note.id)}
+                >
+                  Delete
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Layout>
   );

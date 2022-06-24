@@ -1,83 +1,23 @@
 import React from "react";
 
-import { queryCache, useMutation, useQuery } from "react-query";
-import { Field, Form, Formik, FormikConfig } from "formik";
+import { Field, Form, Formik } from "formik";
 import Layout from "components/Layout/Layout";
-import { deleteSingleIncome, getIncomes, postIncome } from "api/income";
-import { deleteSingleOutcome, getOutcomes, postOutcome } from "api/outcome";
-import { IncomePayload } from "api/income/types";
-import { OutcomePayload } from "api/outcome/types";
+import { useDashboard } from "./useDashboard";
 
 const Dashboard = () => {
-  const { data: incomes } = useQuery("incomes-all", async () => {
-    const res = await getIncomes();
-
-    return res.data;
-  });
-  const { data: outcomes } = useQuery("outcomes-all", async () => {
-    const res = await getOutcomes();
-
-    return res.data;
-  });
-
-  const incomesTotal = incomes?.reduce((prev, curr) => prev + curr.value, 0);
-  const outcomesTotal = outcomes?.reduce((prev, curr) => prev + curr.value, 0);
-  const total = (incomesTotal || 0) - (outcomesTotal || 0);
-
-  const [addIncome] = useMutation(async (income: IncomePayload) => {
-    const res = await postIncome(income);
-    await queryCache.invalidateQueries("incomes-all");
-    return res.data;
-  });
-
-  const [addOutcome] = useMutation(async (outcome: OutcomePayload) => {
-    const res = await postOutcome(outcome);
-    await queryCache.invalidateQueries("outcomes-all");
-    return res.data;
-  });
-
-  const handleAdd: FormikConfig<any>["onSubmit"] = async (
-    values,
-    { resetForm }
-  ) => {
-    if (values.type === "income") {
-      await addIncome({
-        description: values.description,
-        value: values.value,
-        date: new Date(),
-      });
-    } else {
-      await addOutcome({
-        description: values.description,
-        value: values.value,
-        date: new Date(),
-      });
-    }
-
-    resetForm();
-  };
-
-  const [deleteIncome] = useMutation(async (incomeId: string) => {
-    const res = await deleteSingleIncome(incomeId);
-    await queryCache.invalidateQueries("incomes-all");
-    return res.data;
-  });
-
-  const handleDeleteIncome = async (incomeId: number) => {
-    await deleteIncome(JSON.stringify(incomeId));
-  };
-
-
-  const [deleteOutcome] = useMutation(async (outcomeId: string) => {
-    const res = await deleteSingleOutcome(outcomeId);
-    await queryCache.invalidateQueries("outcomes-all");
-    return res.data;
-  });
-
-  const handleDeleteOutcome = async (outcomeId: number) => {
-    await deleteOutcome(JSON.stringify(outcomeId));
-  };
-
+  const {
+    editBudget,
+    incomes,
+    outcomes,
+    incomesTotal,
+    outcomesTotal,
+    total,
+    handleAdd,
+    handleDeleteIncome,
+    handleDeleteOutcome,
+    handleEdit,
+    cancelEdit,
+  } = useDashboard();
 
   return (
     <Layout>
@@ -156,32 +96,150 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-2 bg-white mb-6 border-2 p-6 rounded-md gap-5">
         <div>
-          {incomes?.map((income) => (
-            <div className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-green-500">
-              <div>Amount: ${income.value}</div>
-              <div>Description: {income.description}</div>
-              <div
-                className="text-red-500 text-sm pt-2 cursor-pointer"
-                onClick={() => handleDeleteIncome(income.id)}
-              >
-                Delete
+          {incomes?.map((income) => {
+            const isEdit =
+              editBudget?.type === "income" && editBudget.id === income.id;
+
+            if (isEdit) {
+              return (
+                <Formik initialValues={income} onSubmit={() => {}}>
+                  <Form className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-blue-500">
+                    <div>
+                      Amount:{" "}
+                      <Field
+                        name="value"
+                        type="number"
+                        placeholder="Value"
+                        className="appearance-none mt-1 mb-3 block w-full px-4 py-3 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-600 focus:ring-1"
+                      />
+                    </div>
+                    <div>
+                      Description:{" "}
+                      <Field
+                        name="description"
+                        placeholder="Description"
+                        className="appearance-none mt-1 mb-3 block w-full px-4 py-3 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-600 focus:ring-1"
+                      />
+                    </div>
+                    <div className="flex">
+                      <div
+                        className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
+                        // onClick={cancelEdit}
+                      >
+                        Save
+                      </div>
+                      <div
+                        className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                        onClick={cancelEdit}
+                      >
+                        Cancel Edit
+                      </div>
+                      <div
+                        className="text-red-500 text-sm pt-2 cursor-pointer"
+                        onClick={() => handleDeleteOutcome(income.id)}
+                      >
+                        Delete
+                      </div>
+                    </div>
+                  </Form>
+                </Formik>
+              );
+            }
+
+            return (
+              <div className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-green-500">
+                <div>Amount: ${income.value}</div>
+                <div>Description: {income.description}</div>
+                <div className="flex">
+                  <div
+                    className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                    onClick={() => handleEdit("income", income.id)}
+                  >
+                    Edit
+                  </div>
+                  <div
+                    className="text-red-500 text-sm pt-2 cursor-pointer"
+                    onClick={() => handleDeleteIncome(income.id)}
+                  >
+                    Delete
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div>
-          {outcomes?.map((outcome) => (
-            <div className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-red-500">
-              <div>Amount: ${outcome.value}</div>
-              <div>Description: {outcome.description}</div>
-              <div
-                className="text-red-500 text-sm pt-2 cursor-pointer"
-                onClick={() => handleDeleteOutcome(outcome.id)}
-              >
-                Delete
+          {outcomes?.map((outcome) => {
+            const isEdit =
+              editBudget?.type === "outcome" && editBudget.id === outcome.id;
+
+            if (isEdit) {
+              return (
+                <Formik initialValues={outcome} onSubmit={() => {}}>
+                  <Form className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-blue-500">
+                    <div>
+                      Amount:{" "}
+                      <Field
+                        name="value"
+                        type="number"
+                        placeholder="Value"
+                        className="appearance-none mt-1 mb-3 block w-full px-4 py-3 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-600 focus:ring-1"
+                      />
+                    </div>
+                    <div>
+                      Description:{" "}
+                      <Field
+                        name="description"
+                        placeholder="Description"
+                        className="appearance-none mt-1 mb-3 block w-full px-4 py-3 border border-gray-300 rounded shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-600 focus:ring-1"
+                      />
+                    </div>
+                    <div className="flex">
+                      <div
+                        className="text-green-500 text-sm pt-2 cursor-pointer mr-2"
+                        // onClick={cancelEdit}
+                      >
+                        Save
+                      </div>
+                      <div
+                        className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                        onClick={cancelEdit}
+                      >
+                        Cancel Edit
+                      </div>
+                      <div
+                        className="text-red-500 text-sm pt-2 cursor-pointer"
+                        onClick={() => handleDeleteOutcome(outcome.id)}
+                      >
+                        Delete
+                      </div>
+                    </div>
+                  </Form>
+                </Formik>
+              );
+            }
+
+            return (
+              <div className="bg-gray-50 rounded-md p-4 mb-2 border-2 border-red-500">
+                <div>Amount: ${outcome.value}</div>
+                <div>Description: {outcome.description}</div>
+                <div className="flex">
+                  <div
+                    className="text-blue-500 text-sm pt-2 cursor-pointer mr-2"
+                    onClick={() => handleEdit("outcome", outcome.id)}
+                  >
+                    Edit
+                  </div>
+                  <div
+                    className="text-red-500 text-sm pt-2 cursor-pointer"
+                    onClick={() => handleDeleteOutcome(outcome.id)}
+                  >
+                    Delete
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </Layout>
