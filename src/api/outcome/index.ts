@@ -1,7 +1,7 @@
 import request, { APICall } from "../request";
 import { OutcomePayload, OutcomeType } from "./types";
 
-export const getOutcomes = (): APICall<OutcomeType> =>
+export const getOutcomes = (): APICall<OutcomeType[]> =>
   request({
     url: `/outcomes`,
     method: "GET",

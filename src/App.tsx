@@ -1,11 +1,14 @@
 import React from "react";
 
-// import Routes from "containers/Routes";
+import Routes from "containers/Routes";
+import ReactQueryProvider from "components/providers/ReactQueryProvider";
 
 const App = () => {
   return (
     <div className="App">
-      {/* <Routes /> */}
+      <ReactQueryProvider>
+        <Routes />
+      </ReactQueryProvider>
     </div>
   );
 };

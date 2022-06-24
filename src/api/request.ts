@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { APICall } from "./utils";
 
 const defaultValues = {
@@ -6,6 +6,17 @@ const defaultValues = {
 };
 
 export const axiosClient = axios.create(defaultValues);
+
+axiosClient.interceptors.request.use(
+  (config: AxiosRequestConfig) => {
+    if (!config?.headers?.["user"] && config?.headers) {
+      config.headers["user"] = localStorage.getItem("user_id") as string;
+    }
+
+    return config;
+  },
+  (err) => Promise.reject(err)
+);
 
 export default axiosClient;
 
