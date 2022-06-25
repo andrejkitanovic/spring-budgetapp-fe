@@ -1,16 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import dayjs from "dayjs";
 import Layout from "components/Layout/Layout";
 import { useQuery } from "react-query";
 import { getLogs } from "api/log";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const { data: logs } = useQuery("logs-all", async () => {
     const res = await getLogs();
 
     return res.data;
   });
+
+  useEffect(() => {
+    if (!localStorage.getItem("user_id")) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <Layout>

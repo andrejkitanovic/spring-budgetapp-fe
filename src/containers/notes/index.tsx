@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import Layout from "components/Layout/Layout";
 import { Field, Form, Formik } from "formik";
 import { useNotes } from "./useNotes";
+import { useNavigate } from "react-router-dom";
 
 const Notes = () => {
+  const navigate = useNavigate();
   const {
     editNote,
     notes,
@@ -14,6 +16,12 @@ const Notes = () => {
     handleEdit,
     cancelEdit,
   } = useNotes();
+
+  useEffect(() => {
+    if (!localStorage.getItem("user_id")) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <Layout>

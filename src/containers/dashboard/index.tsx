@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Field, Form, Formik } from "formik";
 import Layout from "components/Layout/Layout";
 import { useDashboard } from "./useDashboard";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const {
     editBudget,
     incomes,
@@ -20,6 +22,12 @@ const Dashboard = () => {
     handleEdit,
     cancelEdit,
   } = useDashboard();
+
+  useEffect(() => {
+    if (!localStorage.getItem("user_id")) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return (
     <Layout>
